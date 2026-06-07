@@ -1,0 +1,7 @@
+node_modules/
+*.json.tmp
+baseline_results.json
+benchmark_results.json
+optimization_results.json
+optimized_results.json
+profiling_data.json
