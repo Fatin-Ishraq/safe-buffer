@@ -4,11 +4,11 @@
  */
 'use strict'
 
-var path = require('path')
-var fs = require('fs')
+const path = require('path')
+const fs = require('fs')
 
 function clock () {
-  var t = process.hrtime()
+  const t = process.hrtime()
   return t[0] * 1e9 + t[1]
 }
 
@@ -19,7 +19,7 @@ function fmtNs (ns) {
   return ns.toFixed(0) + ' ns'
 }
 
-var findings = []
+const findings = []
 
 console.log('=== SAFE-BUFFER PROFILING REPORT ===\n')
 
@@ -28,19 +28,19 @@ console.log('=== SAFE-BUFFER PROFILING REPORT ===\n')
 // =========================================
 console.log('--- 1. Feature Detection Overhead ---')
 
-var buffer = require('buffer')
-var Buffer = buffer.Buffer
+const buffer = require('buffer')
+const Buffer = buffer.Buffer
 
 // Measure the cost of the feature detection check
-var CHECK_ITERS = 10000000
-var start = clock()
-for (var i = 0; i < CHECK_ITERS; i++) {
+const CHECK_ITERS = 10000000
+let start = clock()
+for (let i = 0; i < CHECK_ITERS; i++) {
   if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow) {
     // fast path
   }
 }
-var end = clock()
-var checkTime = (end - start) / CHECK_ITERS
+let end = clock()
+const checkTime = (end - start) / CHECK_ITERS
 console.log('  Feature detection check per call: ' + fmtNs(checkTime))
 findings.push({
   area: 'Feature detection',
@@ -54,7 +54,7 @@ findings.push({
 // =========================================
 console.log('\n--- 2. Modern Node.js Fast Path Analysis ---')
 
-var hasModernAPI = !!(Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow)
+const hasModernAPI = !!(Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow)
 console.log('  Modern Node.js API available: ' + hasModernAPI)
 console.log('  Node.js version: ' + process.version)
 
@@ -73,33 +73,33 @@ if (hasModernAPI) {
 console.log('\n--- 3. Module require() Overhead Breakdown ---')
 
 // Clear cache
-var modPath = path.resolve(__dirname, '..', 'index.js')
+const modPath = path.resolve(__dirname, '..', 'index.js')
 delete require.cache[modPath]
 
 // Measure full require
-var requireTimes = []
-for (var r = 0; r < 100; r++) {
+const requireTimes = []
+for (let r = 0; r < 100; r++) {
   delete require.cache[modPath]
-  var s = clock()
+  const s = clock()
   require(modPath)
-  var e = clock()
+  const e = clock()
   requireTimes.push(e - s)
 }
-var avgRequire = requireTimes.reduce(function (a, b) { return a + b }, 0) / requireTimes.length
+const avgRequire = requireTimes.reduce(function (a, b) { return a + b }, 0) / requireTimes.length
 console.log('  Average require() time: ' + fmtNs(avgRequire))
 
 // Measure just the buffer module require
-var bufModPath = 'buffer'
+const bufModPath = 'buffer'
 delete require.cache[require.resolve(bufModPath)]
-var bufRequireTimes = []
-for (var r2 = 0; r2 < 100; r2++) {
+const bufRequireTimes = []
+for (let r2 = 0; r2 < 100; r2++) {
   delete require.cache[require.resolve(bufModPath)]
-  var s2 = clock()
+  const s2 = clock()
   require(bufModPath)
-  var e2 = clock()
+  const e2 = clock()
   bufRequireTimes.push(e2 - s2)
 }
-var avgBufRequire = bufRequireTimes.reduce(function (a, b) { return a + b }, 0) / bufRequireTimes.length
+const avgBufRequire = bufRequireTimes.reduce(function (a, b) { return a + b }, 0) / bufRequireTimes.length
 console.log('  Average buffer require() time: ' + fmtNs(avgBufRequire))
 console.log('  SafeBuffer overhead beyond buffer require: ' + fmtNs(avgRequire - avgBufRequire))
 
@@ -116,21 +116,21 @@ findings.push({
 console.log('\n--- 4. copyProps() Overhead ---')
 
 // Measure copyProps with Buffer source
-var src = Buffer
-var dst = {}
-var COPY_ITERS = 10000
+const src = Buffer
+const dst = {}
+const COPY_ITERS = 10000
 start = clock()
-for (var c = 0; c < COPY_ITERS; c++) {
-  var tmpDst = {}
-  for (var key in src) {
+for (let c = 0; c < COPY_ITERS; c++) {
+  const tmpDst = {}
+  for (const key in src) {
     tmpDst[key] = src[key]
   }
 }
 end = clock()
-var copyPropsTime = (end - start) / COPY_ITERS
+const copyPropsTime = (end - start) / COPY_ITERS
 console.log('  copyProps(Buffer, obj) time: ' + fmtNs(copyPropsTime))
 
-var bufKeys = Object.keys(Buffer)
+const bufKeys = Object.keys(Buffer)
 console.log('  Number of Buffer keys to copy: ' + bufKeys.length)
 console.log('  Buffer keys: ' + bufKeys.join(', '))
 
@@ -146,24 +146,24 @@ findings.push({
 // =========================================
 console.log('\n--- 5. typeof Check Overhead in Hot Functions ---')
 
-var TYPEOF_ITERS = 10000000
+const TYPEOF_ITERS = 10000000
 
 // typeof 'number' check
 start = clock()
-for (var t = 0; t < TYPEOF_ITERS; t++) {
+for (let t = 0; t < TYPEOF_ITERS; t++) {
   if (typeof 42 !== 'number') {}
 }
 end = clock()
-var typeofNumTime = (end - start) / TYPEOF_ITERS
+const typeofNumTime = (end - start) / TYPEOF_ITERS
 console.log('  typeof number check: ' + fmtNs(typeofNumTime) + '/op')
 
-// typeof 'string' check  
+// typeof 'string' check
 start = clock()
-for (var t2 = 0; t2 < TYPEOF_ITERS; t2++) {
+for (let t2 = 0; t2 < TYPEOF_ITERS; t2++) {
   if (typeof 'hello' === 'number') {}
 }
 end = clock()
-var typeofStrTime = (end - start) / TYPEOF_ITERS
+const typeofStrTime = (end - start) / TYPEOF_ITERS
 console.log('  typeof string-is-number check: ' + fmtNs(typeofStrTime) + '/op')
 
 findings.push({
@@ -178,27 +178,27 @@ findings.push({
 // =========================================
 console.log('\n--- 6. Deprecated Buffer() Constructor Overhead ---')
 
-var ALLOC_ITERS = 1000000
+const ALLOC_ITERS = 1000000
 
 // SafeBuffer.alloc vs native Buffer.alloc
-var SafeBuffer = require(modPath).Buffer
+const SafeBuffer = require(modPath).Buffer
 
 // SafeBuffer.alloc (goes through deprecated Buffer() constructor on legacy path)
 start = clock()
-for (var a = 0; a < ALLOC_ITERS; a++) {
+for (let a = 0; a < ALLOC_ITERS; a++) {
   SafeBuffer.alloc(256)
 }
 end = clock()
-var safeAllocTime = (end - start) / ALLOC_ITERS
+const safeAllocTime = (end - start) / ALLOC_ITERS
 console.log('  SafeBuffer.alloc(256): ' + fmtNs(safeAllocTime) + '/op')
 
 // Native Buffer.alloc
 start = clock()
-for (var a2 = 0; a2 < ALLOC_ITERS; a2++) {
+for (let a2 = 0; a2 < ALLOC_ITERS; a2++) {
   Buffer.alloc(256)
 }
 end = clock()
-var nativeAllocTime = (end - start) / ALLOC_ITERS
+const nativeAllocTime = (end - start) / ALLOC_ITERS
 console.log('  Native Buffer.alloc(256): ' + fmtNs(nativeAllocTime) + '/op')
 
 // Overhead
@@ -221,14 +221,14 @@ findings.push({
 console.log('\n--- 7. Memory Allocation Patterns ---')
 
 // Measure GC pressure from repeated allocations
-var MEM_ITERS = 100000
-var beforeGC = process.memoryUsage()
+const MEM_ITERS = 100000
+const beforeGC = process.memoryUsage()
 start = clock()
-for (var m = 0; m < MEM_ITERS; m++) {
+for (let m = 0; m < MEM_ITERS; m++) {
   SafeBuffer.alloc(64)
 }
 end = clock()
-var afterGC = process.memoryUsage()
+const afterGC = process.memoryUsage()
 console.log('  Heap before: ' + (beforeGC.heapUsed / 1024 / 1024).toFixed(2) + ' MB')
 console.log('  Heap after: ' + (afterGC.heapUsed / 1024 / 1024).toFixed(2) + ' MB')
 console.log('  Heap delta: ' + ((afterGC.heapUsed - beforeGC.heapUsed) / 1024 / 1024).toFixed(2) + ' MB')
@@ -254,7 +254,7 @@ function LegacySafeBuffer_alloc (size, fill, encoding) {
   if (typeof size !== 'number') {
     throw new TypeError('Argument must be a number')
   }
-  var buf = Buffer(size)
+  const buf = Buffer(size)
   if (fill !== undefined) {
     if (typeof encoding === 'string') {
       buf.fill(fill, encoding)
@@ -272,7 +272,7 @@ function LegacySafeBuffer_alloc_optimized (size, fill, encoding) {
     throw new TypeError('Argument must be a number')
   }
   if (fill !== undefined) {
-    var buf = Buffer.allocUnsafe(size)
+    const buf = Buffer.allocUnsafe(size)
     if (typeof encoding === 'string') {
       buf.fill(fill, encoding)
     } else {
@@ -284,40 +284,40 @@ function LegacySafeBuffer_alloc_optimized (size, fill, encoding) {
 }
 
 // Benchmark legacy vs optimized alloc
-var LEGACY_ITERS = 500000
+const LEGACY_ITERS = 500000
 
 start = clock()
-for (var l = 0; l < LEGACY_ITERS; l++) {
+for (let l = 0; l < LEGACY_ITERS; l++) {
   LegacySafeBuffer_alloc(256)
 }
 end = clock()
-var legacyAllocTime = (end - start) / LEGACY_ITERS
+const legacyAllocTime = (end - start) / LEGACY_ITERS
 console.log('  Legacy SafeBuffer.alloc(256): ' + fmtNs(legacyAllocTime) + '/op')
 
 start = clock()
-for (var l2 = 0; l2 < LEGACY_ITERS; l2++) {
+for (let l2 = 0; l2 < LEGACY_ITERS; l2++) {
   LegacySafeBuffer_alloc_optimized(256)
 }
 end = clock()
-var optimizedAllocTime = (end - start) / LEGACY_ITERS
+const optimizedAllocTime = (end - start) / LEGACY_ITERS
 console.log('  Optimized SafeBuffer.alloc(256): ' + fmtNs(optimizedAllocTime) + '/op')
 console.log('  Improvement: ' + ((legacyAllocTime / optimizedAllocTime - 1) * 100).toFixed(1) + '%')
 
 // With fill
 start = clock()
-for (var l3 = 0; l3 < LEGACY_ITERS; l3++) {
+for (let l3 = 0; l3 < LEGACY_ITERS; l3++) {
   LegacySafeBuffer_alloc(256, 0xab)
 }
 end = clock()
-var legacyAllocFillTime = (end - start) / LEGACY_ITERS
+const legacyAllocFillTime = (end - start) / LEGACY_ITERS
 console.log('  Legacy SafeBuffer.alloc(256, 0xab): ' + fmtNs(legacyAllocFillTime) + '/op')
 
 start = clock()
-for (var l3b = 0; l3b < LEGACY_ITERS; l3b++) {
+for (let l3b = 0; l3b < LEGACY_ITERS; l3b++) {
   LegacySafeBuffer_alloc_optimized(256, 0xab)
 }
 end = clock()
-var optimizedAllocFillTime = (end - start) / LEGACY_ITERS
+const optimizedAllocFillTime = (end - start) / LEGACY_ITERS
 console.log('  Optimized SafeBuffer.alloc(256, 0xab): ' + fmtNs(optimizedAllocFillTime) + '/op')
 console.log('  Improvement with fill: ' + ((legacyAllocFillTime / optimizedAllocFillTime - 1) * 100).toFixed(1) + '%')
 
@@ -351,23 +351,23 @@ function OptimizedSafeBuffer_from (arg, encodingOrOffset, length) {
   return Buffer.from(arg, encodingOrOffset, length)
 }
 
-var testStr = 'Hello, World! This is a test string for buffer conversion benchmarks.'
-var FROM_ITERS = 1000000
+const testStr = 'Hello, World! This is a test string for buffer conversion benchmarks.'
+const FROM_ITERS = 1000000
 
 start = clock()
-for (var f = 0; f < FROM_ITERS; f++) {
+for (let f = 0; f < FROM_ITERS; f++) {
   LegacySafeBuffer_from(testStr)
 }
 end = clock()
-var legacyFromTime = (end - start) / FROM_ITERS
+const legacyFromTime = (end - start) / FROM_ITERS
 console.log('  Legacy SafeBuffer.from(string): ' + fmtNs(legacyFromTime) + '/op')
 
 start = clock()
-for (var f2 = 0; f2 < FROM_ITERS; f2++) {
+for (let f2 = 0; f2 < FROM_ITERS; f2++) {
   OptimizedSafeBuffer_from(testStr)
 }
 end = clock()
-var optimizedFromTime = (end - start) / FROM_ITERS
+const optimizedFromTime = (end - start) / FROM_ITERS
 console.log('  Optimized SafeBuffer.from(string): ' + fmtNs(optimizedFromTime) + '/op')
 console.log('  Improvement: ' + ((legacyFromTime / optimizedFromTime - 1) * 100).toFixed(1) + '%')
 
@@ -396,21 +396,21 @@ function OptimizedSafeBuffer_constructor (arg, encodingOrOffset, length) {
   return Buffer.from(arg, encodingOrOffset, length)
 }
 
-var CTOR_ITERS = 1000000
+const CTOR_ITERS = 1000000
 
 start = clock()
-for (var ct = 0; ct < CTOR_ITERS; ct++) {
+for (let ct = 0; ct < CTOR_ITERS; ct++) {
   LegacySafeBuffer_constructor(testStr)
 }
 end = clock()
-var legacyCtorStrTime = (end - start) / CTOR_ITERS
+const legacyCtorStrTime = (end - start) / CTOR_ITERS
 
 start = clock()
-for (var ct2 = 0; ct2 < CTOR_ITERS; ct2++) {
+for (let ct2 = 0; ct2 < CTOR_ITERS; ct2++) {
   OptimizedSafeBuffer_constructor(testStr)
 }
 end = clock()
-var optimizedCtorStrTime = (end - start) / CTOR_ITERS
+const optimizedCtorStrTime = (end - start) / CTOR_ITERS
 
 console.log('  Legacy constructor(string): ' + fmtNs(legacyCtorStrTime) + '/op')
 console.log('  Optimized constructor(string): ' + fmtNs(optimizedCtorStrTime) + '/op')
@@ -418,18 +418,18 @@ console.log('  Improvement: ' + ((legacyCtorStrTime / optimizedCtorStrTime - 1) 
 
 // With number
 start = clock()
-for (var ct3 = 0; ct3 < CTOR_ITERS; ct3++) {
+for (let ct3 = 0; ct3 < CTOR_ITERS; ct3++) {
   LegacySafeBuffer_constructor(256)
 }
 end = clock()
-var legacyCtorNumTime = (end - start) / CTOR_ITERS
+const legacyCtorNumTime = (end - start) / CTOR_ITERS
 
 start = clock()
-for (var ct3b = 0; ct3b < CTOR_ITERS; ct3b++) {
+for (let ct3b = 0; ct3b < CTOR_ITERS; ct3b++) {
   OptimizedSafeBuffer_constructor(256)
 }
 end = clock()
-var optimizedCtorNumTime = (end - start) / CTOR_ITERS
+const optimizedCtorNumTime = (end - start) / CTOR_ITERS
 
 console.log('  Legacy constructor(number): ' + fmtNs(legacyCtorNumTime) + '/op')
 console.log('  Optimized constructor(number): ' + fmtNs(optimizedCtorNumTime) + '/op')
@@ -451,23 +451,23 @@ console.log('\n--- 11. Prototype Chain Overhead ---')
 // On legacy, SafeBuffer.prototype = Object.create(Buffer.prototype)
 // This means instanceof checks go through an extra prototype hop
 
-var protoTest = SafeBuffer.alloc(16)
-var INSTANCEOF_ITERS = 10000000
+const protoTest = SafeBuffer.alloc(16)
+const INSTANCEOF_ITERS = 10000000
 
 start = clock()
-for (var p = 0; p < INSTANCEOF_ITERS; p++) {
+for (let p = 0; p < INSTANCEOF_ITERS; p++) {
   Buffer.isBuffer(protoTest)
 }
 end = clock()
-var isBufferTime = (end - start) / INSTANCEOF_ITERS
+const isBufferTime = (end - start) / INSTANCEOF_ITERS
 console.log('  Buffer.isBuffer() per call: ' + fmtNs(isBufferTime))
 
 start = clock()
-for (var p2 = 0; p2 < INSTANCEOF_ITERS; p2++) {
+for (let p2 = 0; p2 < INSTANCEOF_ITERS; p2++) {
   protoTest instanceof Buffer
 }
 end = clock()
-var instanceofTime = (end - start) / INSTANCEOF_ITERS
+const instanceofTime = (end - start) / INSTANCEOF_ITERS
 console.log('  instanceof Buffer per call: ' + fmtNs(instanceofTime))
 
 findings.push({
@@ -480,7 +480,7 @@ findings.push({
 // =========================================
 // Save profiling report
 // =========================================
-var report = '# Profiling Report: safe-buffer\n\n'
+let report = '# Profiling Report: safe-buffer\n\n'
 report += '## Environment\n'
 report += '- Node.js version: ' + process.version + '\n'
 report += '- Modern Buffer API available: ' + hasModernAPI + '\n'
@@ -535,7 +535,7 @@ console.log('\nProfiling report saved to: profiling_report.md')
 
 // Save findings as JSON too
 fs.writeFileSync(path.resolve(__dirname, 'profiling_data.json'), JSON.stringify({
-  findings: findings,
+  findings,
   measurements: {
     featureDetectionNs: checkTime,
     requireOverheadNs: avgRequire,

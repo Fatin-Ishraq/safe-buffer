@@ -30,7 +30,8 @@ if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow)
       buf.fill(0)
       return buf
     }
-    return hasFrom ? Buffer.from(arg, encodingOrOffset, length)
+    return hasFrom
+      ? Buffer.from(arg, encodingOrOffset, length)
       : Buffer(arg, encodingOrOffset, length)
   }
 
@@ -43,7 +44,8 @@ if (Buffer.from && Buffer.alloc && Buffer.allocUnsafe && Buffer.allocUnsafeSlow)
     if (typeof arg === 'number') {
       throw new TypeError('Argument must not be a number')
     }
-    return hasFrom ? Buffer.from(arg, encodingOrOffset, length)
+    return hasFrom
+      ? Buffer.from(arg, encodingOrOffset, length)
       : Buffer(arg, encodingOrOffset, length)
   }
 

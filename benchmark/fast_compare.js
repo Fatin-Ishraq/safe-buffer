@@ -3,11 +3,11 @@
  */
 'use strict'
 
-var fs = require('fs')
-var path = require('path')
+const fs = require('fs')
+const path = require('path')
 
 function clock () {
-  var t = process.hrtime()
+  const t = process.hrtime()
   return t[0] * 1e9 + t[1]
 }
 
@@ -17,28 +17,28 @@ function fmtNs (ns) {
   return ns.toFixed(0) + ' ns'
 }
 
-var RUNS = 5
-var WARMUP = 2
+const RUNS = 5
+const WARMUP = 2
 
 function bench (fn, iters) {
-  for (var w = 0; w < WARMUP; w++) fn(iters)
-  var times = []
-  for (var r = 0; r < RUNS; r++) {
-    var s = clock(); fn(iters); var e = clock()
+  for (let w = 0; w < WARMUP; w++) fn(iters)
+  const times = []
+  for (let r = 0; r < RUNS; r++) {
+    const s = clock(); fn(iters); const e = clock()
     times.push(e - s)
   }
   return times.reduce(function (a, b) { return a + b }, 0) / RUNS / iters
 }
 
-var NativeBuffer = require('buffer').Buffer
-var testStr = 'Hello, World! This is a test string for buffer conversion benchmarks.'
-var testArr = []
-for (var i = 0; i < 256; i++) testArr.push(i & 0xff)
+const NativeBuffer = require('buffer').Buffer
+const testStr = 'Hello, World! This is a test string for buffer conversion benchmarks.'
+const testArr = []
+for (let i = 0; i < 256; i++) testArr.push(i & 0xff)
 
 // Legacy implementations (original code)
 function legacyAlloc (size, fill, encoding) {
   if (typeof size !== 'number') throw new TypeError('Argument must be a number')
-  var buf = NativeBuffer(size)
+  const buf = NativeBuffer(size)
   if (fill !== undefined) {
     if (typeof encoding === 'string') buf.fill(fill, encoding)
     else buf.fill(fill)
@@ -63,7 +63,7 @@ function legacyCtor (arg, enc, len) {
 function optAlloc (size, fill, encoding) {
   if (typeof size !== 'number') throw new TypeError('Argument must be a number')
   if (fill !== undefined) {
-    var buf = NativeBuffer.allocUnsafe(size)
+    const buf = NativeBuffer.allocUnsafe(size)
     if (typeof encoding === 'string') buf.fill(fill, encoding)
     else buf.fill(fill)
     return buf
@@ -83,12 +83,12 @@ function optCtor (arg, enc, len) {
   return NativeBuffer.from(arg, enc, len)
 }
 
-var results = {}
-var N = 200000
+const results = {}
+const N = 200000
 
 console.log('\n=== Legacy Path: Baseline vs Optimized ===\n')
 
-var tests = [
+const tests = [
   ['alloc(256)', function () { legacyAlloc(256) }, function () { optAlloc(256) }],
   ['alloc(256, 0xab)', function () { legacyAlloc(256, 0xab) }, function () { optAlloc(256, 0xab) }],
   ['alloc(4096)', function () { legacyAlloc(4096) }, function () { optAlloc(4096) }],
@@ -104,20 +104,20 @@ var tests = [
 ]
 
 tests.forEach(function (tc) {
-  var name = tc[0]
-  var bFn = tc[1]
-  var oFn = tc[2]
+  const name = tc[0]
+  const bFn = tc[1]
+  const oFn = tc[2]
 
-  var bNs = bench(function (n) { for (var i = 0; i < n; i++) bFn() }, N)
-  var oNs = bench(function (n) { for (var i = 0; i < n; i++) oFn() }, N)
+  const bNs = bench(function (n) { for (let i = 0; i < n; i++) bFn() }, N)
+  const oNs = bench(function (n) { for (let i = 0; i < n; i++) oFn() }, N)
 
-  var speedup = (bNs / oNs).toFixed(2)
-  var pct = ((bNs / oNs - 1) * 100).toFixed(1)
+  const speedup = (bNs / oNs).toFixed(2)
+  const pct = ((bNs / oNs - 1) * 100).toFixed(1)
 
   results[name] = {
     baselineNsPerOp: bNs,
     optimizedNsPerOp: oNs,
-    speedup: speedup,
+    speedup,
     improvement: pct
   }
 
@@ -128,15 +128,15 @@ tests.forEach(function (tc) {
 })
 
 // Module require overhead test
-var modKey = path.resolve(__dirname, '..', 'index.js')
-var origKey = path.resolve(__dirname, '..', 'index.original.js')
+const modKey = path.resolve(__dirname, '..', 'index.js')
+const origKey = path.resolve(__dirname, '..', 'index.original.js')
 
 // Copy original to test
-var origCode = fs.readFileSync(origKey, 'utf8')
+const origCode = fs.readFileSync(origKey, 'utf8')
 
 // Baseline require overhead
-var bReq = bench(function (n) {
-  for (var i = 0; i < n; i++) {
+const bReq = bench(function (n) {
+  for (let i = 0; i < n; i++) {
     delete require.cache[modKey]
     require(modKey)
   }
@@ -145,8 +145,8 @@ var bReq = bench(function (n) {
 // Save original, test, then restore
 fs.writeFileSync(modKey + '.tmp', fs.readFileSync(modKey))
 fs.writeFileSync(modKey, origCode)
-var origReq = bench(function (n) {
-  for (var i = 0; i < n; i++) {
+const origReq = bench(function (n) {
+  for (let i = 0; i < n; i++) {
     delete require.cache[modKey]
     require(modKey)
   }
@@ -155,8 +155,8 @@ var origReq = bench(function (n) {
 fs.writeFileSync(modKey, fs.readFileSync(modKey + '.tmp'))
 fs.unlinkSync(modKey + '.tmp')
 
-var reqSpeedup = (origReq / bReq).toFixed(2)
-var reqPct = ((origReq / bReq - 1) * 100).toFixed(1)
+const reqSpeedup = (origReq / bReq).toFixed(2)
+const reqPct = ((origReq / bReq - 1) * 100).toFixed(1)
 results['require() overhead'] = {
   baselineNsPerOp: origReq,
   optimizedNsPerOp: bReq,
@@ -170,6 +170,6 @@ console.log('    Optimized: ' + fmtNs(bReq) + '/op')
 console.log('    Speedup:   ' + reqSpeedup + 'x (' + reqPct + '%)\n')
 
 // Save JSON
-var outPath = path.resolve(__dirname, '..', 'optimization_results.json')
+const outPath = path.resolve(__dirname, '..', 'optimization_results.json')
 fs.writeFileSync(outPath, JSON.stringify(results, null, 2))
 console.log('Results saved to: ' + outPath)

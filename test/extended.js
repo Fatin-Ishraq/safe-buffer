@@ -4,34 +4,34 @@
  */
 'use strict'
 
-var test = require('tape')
-var SafeBuffer = require('../').Buffer
-var NativeBuffer = require('buffer').Buffer
+const test = require('tape')
+const SafeBuffer = require('../').Buffer
+const NativeBuffer = require('buffer').Buffer
 
 test('SafeBuffer.alloc zero-fills correctly', function (t) {
-  var buf = SafeBuffer.alloc(100)
-  for (var i = 0; i < 100; i++) {
+  const buf = SafeBuffer.alloc(100)
+  for (let i = 0; i < 100; i++) {
     t.equal(buf[i], 0, 'byte ' + i + ' should be 0')
   }
   t.end()
 })
 
 test('SafeBuffer.alloc with fill number', function (t) {
-  var buf = SafeBuffer.alloc(100, 0xab)
-  for (var i = 0; i < 100; i++) {
+  const buf = SafeBuffer.alloc(100, 0xab)
+  for (let i = 0; i < 100; i++) {
     t.equal(buf[i], 0xab, 'byte ' + i + ' should be 0xab')
   }
   t.end()
 })
 
 test('SafeBuffer.alloc with fill string', function (t) {
-  var buf = SafeBuffer.alloc(10, 'abc')
+  const buf = SafeBuffer.alloc(10, 'abc')
   t.equal(buf.toString(), 'abcabcabca', 'fill with string works')
   t.end()
 })
 
 test('SafeBuffer.alloc with fill string and encoding', function (t) {
-  var buf = SafeBuffer.alloc(8, 'deadbeef', 'hex')
+  const buf = SafeBuffer.alloc(8, 'deadbeef', 'hex')
   t.equal(buf[0], 0xde, 'first byte should be 0xde')
   t.equal(buf[1], 0xad, 'second byte should be 0xad')
   t.equal(buf[2], 0xbe, 'third byte should be 0xbe')
@@ -40,63 +40,63 @@ test('SafeBuffer.alloc with fill string and encoding', function (t) {
 })
 
 test('SafeBuffer.alloc with fill Buffer', function (t) {
-  var fill = NativeBuffer.from([1, 2, 3])
-  var buf = SafeBuffer.alloc(9, fill)
+  const fill = NativeBuffer.from([1, 2, 3])
+  const buf = SafeBuffer.alloc(9, fill)
   t.deepEqual(Array.from(buf), [1, 2, 3, 1, 2, 3, 1, 2, 3])
   t.end()
 })
 
 test('SafeBuffer.from string matches native', function (t) {
-  var safe = SafeBuffer.from('hello world')
-  var native = NativeBuffer.from('hello world')
+  const safe = SafeBuffer.from('hello world')
+  const native = NativeBuffer.from('hello world')
   t.deepEqual(safe, native)
   t.end()
 })
 
 test('SafeBuffer.from hex string matches native', function (t) {
-  var safe = SafeBuffer.from('deadbeef', 'hex')
-  var native = NativeBuffer.from('deadbeef', 'hex')
+  const safe = SafeBuffer.from('deadbeef', 'hex')
+  const native = NativeBuffer.from('deadbeef', 'hex')
   t.deepEqual(safe, native)
   t.end()
 })
 
 test('SafeBuffer.from array matches native', function (t) {
-  var arr = [1, 2, 3, 4, 5]
-  var safe = SafeBuffer.from(arr)
-  var native = NativeBuffer.from(arr)
+  const arr = [1, 2, 3, 4, 5]
+  const safe = SafeBuffer.from(arr)
+  const native = NativeBuffer.from(arr)
   t.deepEqual(safe, native)
   t.end()
 })
 
 test('SafeBuffer.from Uint8Array matches native', function (t) {
-  var ui = new Uint8Array([1, 2, 3, 4, 5])
-  var safe = SafeBuffer.from(ui)
-  var native = NativeBuffer.from(ui)
+  const ui = new Uint8Array([1, 2, 3, 4, 5])
+  const safe = SafeBuffer.from(ui)
+  const native = NativeBuffer.from(ui)
   t.deepEqual(safe, native)
   t.end()
 })
 
 test('SafeBuffer.from ArrayBuffer matches native', function (t) {
-  var ab = new ArrayBuffer(8)
-  var dv = new DataView(ab)
-  for (var i = 0; i < 8; i++) dv.setUint8(i, i * 16)
-  var safe = SafeBuffer.from(ab)
-  var native = NativeBuffer.from(ab)
+  const ab = new ArrayBuffer(8)
+  const dv = new DataView(ab)
+  for (let i = 0; i < 8; i++) dv.setUint8(i, i * 16)
+  const safe = SafeBuffer.from(ab)
+  const native = NativeBuffer.from(ab)
   t.deepEqual(safe, native)
   t.end()
 })
 
 test('SafeBuffer.from Buffer matches native', function (t) {
-  var original = NativeBuffer.from([1, 2, 3])
-  var safe = SafeBuffer.from(original)
-  var native = NativeBuffer.from(original)
+  const original = NativeBuffer.from([1, 2, 3])
+  const safe = SafeBuffer.from(original)
+  const native = NativeBuffer.from(original)
   t.deepEqual(safe, native)
   t.end()
 })
 
 test('new SafeBuffer(string) matches new NativeBuffer(string)', function (t) {
   // Note: new Buffer(string) is deprecated but must still work
-  var safe = new SafeBuffer('hello')
+  const safe = new SafeBuffer('hello')
   t.equal(safe.toString(), 'hello')
   t.ok(SafeBuffer.isBuffer(safe))
   t.ok(NativeBuffer.isBuffer(safe))
@@ -104,7 +104,7 @@ test('new SafeBuffer(string) matches new NativeBuffer(string)', function (t) {
 })
 
 test('new SafeBuffer(array) works correctly', function (t) {
-  var safe = new SafeBuffer([1, 2, 3])
+  const safe = new SafeBuffer([1, 2, 3])
   t.equal(safe[0], 1)
   t.equal(safe[1], 2)
   t.equal(safe[2], 3)
@@ -114,7 +114,7 @@ test('new SafeBuffer(array) works correctly', function (t) {
 })
 
 test('SafeBuffer.allocUnsafe returns correct length buffer', function (t) {
-  var buf = SafeBuffer.allocUnsafe(256)
+  const buf = SafeBuffer.allocUnsafe(256)
   t.equal(buf.length, 256)
   t.ok(SafeBuffer.isBuffer(buf))
   t.ok(NativeBuffer.isBuffer(buf))
@@ -122,7 +122,7 @@ test('SafeBuffer.allocUnsafe returns correct length buffer', function (t) {
 })
 
 test('SafeBuffer.allocUnsafeSlow returns non-pooled buffer', function (t) {
-  var buf = SafeBuffer.allocUnsafeSlow(256)
+  const buf = SafeBuffer.allocUnsafeSlow(256)
   t.equal(buf.length, 256)
   t.ok(SafeBuffer.isBuffer(buf))
   t.ok(NativeBuffer.isBuffer(buf))
@@ -130,7 +130,7 @@ test('SafeBuffer.allocUnsafeSlow returns non-pooled buffer', function (t) {
 })
 
 test('SafeBuffer.isBuffer works', function (t) {
-  var buf = SafeBuffer.alloc(16)
+  const buf = SafeBuffer.alloc(16)
   t.ok(SafeBuffer.isBuffer(buf))
   t.ok(NativeBuffer.isBuffer(buf))
   t.notOk(SafeBuffer.isBuffer({}))
@@ -160,15 +160,15 @@ test('SafeBuffer.byteLength matches native', function (t) {
 })
 
 test('SafeBuffer.concat works', function (t) {
-  var bufs = [SafeBuffer.from('hello '), SafeBuffer.from('world')]
-  var result = SafeBuffer.concat(bufs)
+  const bufs = [SafeBuffer.from('hello '), SafeBuffer.from('world')]
+  const result = SafeBuffer.concat(bufs)
   t.equal(result.toString(), 'hello world')
   t.end()
 })
 
 test('SafeBuffer.compare works', function (t) {
-  var a = SafeBuffer.from('abc')
-  var b = SafeBuffer.from('abd')
+  const a = SafeBuffer.from('abc')
+  const b = SafeBuffer.from('abd')
   t.ok(SafeBuffer.compare(a, b) < 0)
   t.ok(SafeBuffer.compare(b, a) > 0)
   t.equal(SafeBuffer.compare(a, a), 0)
@@ -190,7 +190,7 @@ test('SafeBuffer.poolSize is accessible', function (t) {
 })
 
 test('Buffer.prototype methods work on SafeBuffer instances', function (t) {
-  var buf = SafeBuffer.from('hello world')
+  const buf = SafeBuffer.from('hello world')
   t.equal(buf.toString(), 'hello world')
   t.equal(buf.slice(0, 5).toString(), 'hello')
   t.equal(buf.indexOf('world'), 6)
@@ -199,18 +199,18 @@ test('Buffer.prototype methods work on SafeBuffer instances', function (t) {
 })
 
 test('SafeBuffer.from with offset and length (ArrayBuffer)', function (t) {
-  var ab = new ArrayBuffer(16)
-  var view = new Uint8Array(ab)
-  for (var i = 0; i < 16; i++) view[i] = i
-  var safe = SafeBuffer.from(ab, 4, 8)
-  var native = NativeBuffer.from(ab, 4, 8)
+  const ab = new ArrayBuffer(16)
+  const view = new Uint8Array(ab)
+  for (let i = 0; i < 16; i++) view[i] = i
+  const safe = SafeBuffer.from(ab, 4, 8)
+  const native = NativeBuffer.from(ab, 4, 8)
   t.deepEqual(safe, native)
   t.equal(safe.length, 8)
   t.end()
 })
 
 test('SafeBuffer.alloc(0) returns empty buffer', function (t) {
-  var buf = SafeBuffer.alloc(0)
+  const buf = SafeBuffer.alloc(0)
   t.equal(buf.length, 0)
   t.end()
 })
@@ -241,19 +241,19 @@ test('SafeBuffer.allocUnsafe throws with non-number', function (t) {
 })
 
 test('Binary data roundtrip', function (t) {
-  var data = new Uint8Array(256)
-  for (var i = 0; i < 256; i++) data[i] = i
-  var buf = SafeBuffer.from(data)
-  for (var j = 0; j < 256; j++) {
+  const data = new Uint8Array(256)
+  for (let i = 0; i < 256; i++) data[i] = i
+  const buf = SafeBuffer.from(data)
+  for (let j = 0; j < 256; j++) {
     t.equal(buf[j], j, 'byte ' + j + ' preserved')
   }
   t.end()
 })
 
 test('UTF-8 encoding roundtrip', function (t) {
-  var strings = ['hello', '你好世界', '🎉🎊', 'café', 'naïve']
+  const strings = ['hello', '你好世界', '🎉🎊', 'café', 'naïve']
   strings.forEach(function (s) {
-    var buf = SafeBuffer.from(s, 'utf8')
+    const buf = SafeBuffer.from(s, 'utf8')
     t.equal(buf.toString('utf8'), s, 'roundtrip for: ' + s)
   })
   t.end()
